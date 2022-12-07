@@ -6,11 +6,13 @@ const router = express.Router();
  * BASIC PHASE 1, Step A - Import model
  */
 // Your code here
+const {Tree} = require('../db/models')
 
 /**
  * INTERMEDIATE BONUS PHASE 1 (OPTIONAL), Step A:
  *   Import Op to perform comparison operations in WHERE clauses
  **/
+ const { Op } = require('sequelize');
 // Your code here
 
 /**
@@ -23,10 +25,14 @@ const router = express.Router();
  *   - Object properties: heightFt, tree, id
  *   - Ordered by the heightFt from tallest to shortest
  */
+
 router.get('/', async (req, res, next) => {
     let trees = [];
 
-    // Your code here
+    trees = await Tree.findAll({
+        attribute: ['heightFt', 'tree', 'id'],
+        order: ['heightFt']
+    });
 
     res.json(trees);
 });
@@ -44,7 +50,7 @@ router.get('/:id', async (req, res, next) => {
     let tree;
 
     try {
-        // Your code here
+        tree = await Tree.findByPk(req.params.id)
 
         if (tree) {
             res.json(tree);
@@ -82,9 +88,23 @@ router.get('/:id', async (req, res, next) => {
  */
 router.post('/', async (req, res, next) => {
     try {
+        const {name, location, height, size} = req.body;
+        const data = {};
+        let newTree;
+        if(name) data.tree = name;
+        if(location) data.location = location;
+        if(height) data.heightFt = height;
+        if(size) data.groundCircumferenceFt = size;
+        console.log(data)
+        if(!await Tree.findOne({
+            where: data
+        })){
+            newTree = await Tree.create(data);
+        }
         res.json({
             status: "success",
             message: "Successfully created new tree",
+            data: newTree
         });
     } catch(err) {
         next({
