@@ -136,16 +136,19 @@ router.post('/', async (req, res, next) => {
  *     - Value: Tree not found
  */
 router.delete('/:id', async (req, res, next) => {
-    try {
+        const treeId = req.params.id;
+        const foundTree = await Tree.findByPk(treeId);
+    if(foundTree) {
+        await foundTree.destroy();
         res.json({
             status: "success",
             message: `Successfully removed tree ${req.params.id}`,
         });
-    } catch(err) {
+    } else {
         next({
-            status: "error",
+            status: 'not-found',
             message: `Could not remove tree ${req.params.id}`,
-            details: err.errors ? err.errors.map(item => item.message).join(', ') : err.message
+            details: 'Tree not found'
         });
     }
 });
@@ -187,6 +190,38 @@ router.delete('/:id', async (req, res, next) => {
 router.put('/:id', async (req, res, next) => {
     try {
         // Your code here
+        const treeId = req.params.id;
+        const { id, name, location, height, size } = req.body;
+
+        if(treeId != id) {
+            return res.json({
+                status: "error",
+                message: "Could not update tree",
+                details: `${treeId} does not match ${id}`
+            });
+        }
+        const foundTree = await Tree.findByPk(treeId);
+
+        if(foundTree) {
+            foundTree.update({
+                tree: name,
+                location: location,
+                heightFt: height,
+                groundCircumferenceFt: size
+            })
+            res.json({
+                status: "success",
+                message: "Successfully updated tree",
+                data: foundTree
+            })
+        } else {
+            res.json({
+                status: "not-found",
+                message: `Could not update tree ${id}`,
+                details: `Tree not found`
+            });
+        }
+
     } catch(err) {
         next({
             status: "error",
