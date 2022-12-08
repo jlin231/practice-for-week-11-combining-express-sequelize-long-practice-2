@@ -61,19 +61,17 @@ router.get('/insects-trees', async (req, res, next) => {
     for (let i = 0; i < insects.length; i++) {
         const insect = insects[i];
         const trees = await insect.getTrees()
-
+        const insectsTrees = [];
         for(let j = 0; j<trees.length; j++){
-            payload.push({
+            insectsTrees.push({id: trees[j].id, tree: trees[j].tree});
+        }
+        payload.push({
                 id: insect.id,
                 name: insect.name,
                 description: insect.description,
-                trees: [{id : trees[j].id,
-                        tree: trees[j].tree}]
+                trees: insectsTrees
             });
-        }
     }
-
-    
 
     res.json(payload);
 });
